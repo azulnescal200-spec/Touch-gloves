@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Câmera Teste</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+    }
+
+    #msg {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      color: cyan;
+      font-family: Arial, sans-serif;
+      background: rgba(0,0,0,0.6);
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<video id="video" autoplay playsinline></video>
+<div id="msg">Iniciando câmera...</div>
+
+<script>
+  const video = document.getElementById("video");
+  const msg = document.getElementById("msg");
+
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false
+      });
+      video.srcObject = stream;
+      msg.textContent = "Câmera ativa ✔️";
+    } catch (err) {
+      msg.textContent = "Erro ao acessar a câmera ❌";
+      console.error(err);
+    }
+  }
+
+  startCamera();
+</script>
+
+</body>
+</html>
