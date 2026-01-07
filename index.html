@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Câmera Teste</title>
+  <title>Hand Tracking</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -12,7 +12,10 @@
       overflow: hidden;
     }
 
-    video {
+    video, canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
       object-fit: cover;
@@ -27,33 +30,82 @@
       background: rgba(0,0,0,0.6);
       padding: 6px 10px;
       border-radius: 6px;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
 
 <video id="video" autoplay playsinline></video>
-<div id="msg">Iniciando câmera...</div>
+<canvas id="canvas"></canvas>
+<div id="msg">Carregando modelo...</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
 <script>
   const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
   const msg = document.getElementById("msg");
 
   async function startCamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-        audio: false
-      });
-      video.srcObject = stream;
-      msg.textContent = "Câmera ativa ✔️";
-    } catch (err) {
-      msg.textContent = "Erro ao acessar a câmera ❌";
-      console.error(err);
-    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" },
+      audio: false
+    });
+    video.srcObject = stream;
   }
 
   startCamera();
+
+  const hands = new Hands({
+    locateFile: file =>
+      `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  });
+
+  hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+  });
+
+  hands.onResults(results => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      msg.textContent = "Mão detectada ✋";
+
+      for (const landmarks of results.multiHandLandmarks) {
+        drawConnectors(ctx, landmarks, HAND_CONNECTIONS, {
+          color: "#00ffff",
+          lineWidth: 3
+        });
+        drawLandmarks(ctx, landmarks, {
+          color: "#ffffff",
+          radius: 4
+        });
+      }
+    } else {
+      msg.textContent = "Mostre sua mão para a câmera";
+    }
+  });
+
+  const camera = new Camera(video, {
+    onFrame: async () => {
+      await hands.send({ image: video });
+    },
+    width: 640,
+    height: 480
+  });
+
+  camera.start();
 </script>
 
 </body>
