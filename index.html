@@ -73,14 +73,19 @@
   });
 
   hands.onResults(results => {
-  canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // espelhamento horizontal
-  canvasCtx.translate(canvas.width, 0);
-  canvasCtx.scale(-1, 1);
+  canvasCtx.save();
 
-  canvasCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+  // Espelhar horizontalmente
+  canvasCtx.scale(-1, 1);
+  canvasCtx.drawImage(
+    results.image,
+    -canvas.width,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
   if (results.multiHandLandmarks) {
     for (const landmarks of results.multiHandLandmarks) {
@@ -96,6 +101,7 @@
   }
 
   canvasCtx.restore();
+});
 });
         });
       }
