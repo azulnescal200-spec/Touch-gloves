@@ -46,15 +46,13 @@
 
 <script>
   const video = document.getElementById("video");
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
-  const msg = document.getElementById("msg");
+const canvas = document.getElementById("output");
+const canvasCtx = canvas.getContext("2d");
 
-  async function startCamera() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
-      audio: false
-    });
+video.addEventListener("loadedmetadata", () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+});
     video.srcObject = stream;
   }
 
