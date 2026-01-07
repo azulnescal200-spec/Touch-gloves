@@ -19,7 +19,6 @@
   width: 100vw;
   height: 100vh;
   object-fit: cover;
-  transform: scaleX(-1);
 }
 
     #msg {
@@ -74,23 +73,30 @@
   });
 
   hands.onResults(results => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+  canvasCtx.save();
+  canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+  // espelhamento horizontal
+  canvasCtx.translate(canvas.width, 0);
+  canvasCtx.scale(-1, 1);
 
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-      msg.textContent = "Mão detectada ✋";
+  canvasCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
-      for (const landmarks of results.multiHandLandmarks) {
-        drawConnectors(ctx, landmarks, HAND_CONNECTIONS, {
-          color: "#00ffff",
-          lineWidth: 3
-        });
-        drawLandmarks(ctx, landmarks, {
-          color: "#ffffff",
-          radius: 4
+  if (results.multiHandLandmarks) {
+    for (const landmarks of results.multiHandLandmarks) {
+      drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
+        color: "#00FFFF",
+        lineWidth: 3
+      });
+      drawLandmarks(canvasCtx, landmarks, {
+        color: "#FFFFFF",
+        lineWidth: 2
+      });
+    }
+  }
+
+  canvasCtx.restore();
+});
         });
       }
     } else {
